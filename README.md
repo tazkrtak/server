@@ -7,14 +7,14 @@
 The [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
 should be followed using the following types:
 
-| Type       | Related Changes                                                  |
-| :--------- | :--------------------------------------------------------------- |
-| `style`    | Restyling widgets or Updating theme, without affecting any logic |
-| `feat`     | Introducing new feature                                          |
-| `fix`      | Fixing a bug                                                     |
-| `refactor` | Code change that neither fixes a bug nor adds a feature          |
-| `ci`       | Updating GitHub Actions workflow or adding new one               |
-| `chore`    | Changes not related to application code, like updating README    |
+| Type       | Related Changes                                               |
+| :--------- | :------------------------------------------------------------ |
+| `test`     | Adding or updating unit tests                                 |
+| `feat`     | Introducing new feature                                       |
+| `fix`      | Fixing a bug                                                  |
+| `refactor` | Code change that neither fixes a bug nor adds a feature       |
+| `ci`       | Updating GitHub Actions workflow or adding new one            |
+| `chore`    | Changes not related to application code, like updating README |
 
 ### Merging Workflow
 

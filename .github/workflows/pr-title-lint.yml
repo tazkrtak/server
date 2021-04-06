@@ -11,7 +11,7 @@ jobs:
     - uses: deepakputhraya/action-pr-title@master
       with:
         regex: '([a-z])+\: ([a-z1-9])+'
-        allowed_prefixes: 'style,feat,fix,refactor,ci,chore'
+        allowed_prefixes: 'test,feat,fix,refactor,ci,chore'
         prefix_case_sensitive: true
         min_length: 5
         max_length: 72
