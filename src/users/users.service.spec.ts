@@ -22,7 +22,7 @@ describe('UsersService', () => {
         email: 'zerobasedteam@gmail.com',
       };
 
-      expect(usersService.register()).toEqual(result);
+      expect(usersService.create()).toEqual(result);
     });
   });
 });

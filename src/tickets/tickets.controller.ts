@@ -1,16 +1,25 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ScannerType } from 'src/scanner/interfaces/scanner.interface';
+import { ScannersService } from 'src/scanner/Scanners.service';
+import { UsersService } from 'src/users/users.service';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { TicketsService } from './tickets.service';
 
 @Controller('tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly usersService: UsersService,
+    private readonly scannerService: ScannersService,
+  ) {}
 
   @Post('/purchase')
   async purchase(
     @Body() purchaseTicketDto: PurchaseTicketDto,
   ): Promise<Ticket> {
-    return this.ticketsService.purchase(purchaseTicketDto);
+    const user = this.usersService.findOne(purchaseTicketDto.userId);
+    const consumer = this.scannerService.findOne('3');
+    return this.ticketsService.create(purchaseTicketDto, user, consumer);
   }
 }
