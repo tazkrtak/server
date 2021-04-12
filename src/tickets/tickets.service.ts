@@ -1,35 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { Transaction } from 'src/transactions/interfaces/transaction.interface';
-import { User } from 'src/users/interfaces/user.interface';
+import { ScannersService } from '../scanner/scanners.service';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { TotpService } from './totp.service';
+import { Transaction } from '../transactions/interfaces/transaction.interface';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TicketsService {
-  constructor(private readonly totpService: TotpService) {}
+  constructor(
+    private readonly totpService: TotpService,
+    private readonly usersService: UsersService,
+    private readonly scannersService: ScannersService,
+  ) {}
   purchase(purchaseTicketDto: PurchaseTicketDto): Ticket {
-    const user: User = {
-      id: purchaseTicketDto.userId,
-      secret: 'WKSFANU2PIIOF5GK',
-      email: 'zerobasedteam@gmail.com',
-      name: 'zero-based',
-    };
-
+    const user = this.usersService.register();
+    const consumer = this.scannersService.registerConsumer();
     const isValid = this.totpService.check(purchaseTicketDto.totp, user.secret);
     if (isValid) {
       const transaction: Transaction = {
         id: '1',
-        userId: '1',
-        amount: 6,
-        referenceId: '3',
+        userId: user.id,
+        amount: purchaseTicketDto.quantity * purchaseTicketDto.price,
+        referenceId: null,
       };
       const ticket: Ticket = {
         id: '1',
-        userId: '1',
-        quantity: 2,
-        price: 3,
-        scanned_by: 'a3tfk13',
+        userId: user.id,
+        quantity: purchaseTicketDto.quantity,
+        price: purchaseTicketDto.price,
+        scanned_by: consumer.id,
         scanned_at: new Date(Date.now()),
         checked_by: null,
         checked_at: null,
