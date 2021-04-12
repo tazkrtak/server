@@ -1,0 +1,21 @@
+name: Main CI
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  continuos-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install node v15
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+      - name: Install dependencies
+        run: yarn install
+      - name: Lint
+        run: yarn lint:ci
+      - name: Run Tests
+        run: yarn test
