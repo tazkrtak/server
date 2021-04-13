@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ScannersService } from './Scanners.service';
+import { ScannersService } from './scanners.service';
 
 @Module({
   providers: [ScannersService],
