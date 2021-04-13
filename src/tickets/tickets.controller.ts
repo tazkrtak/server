@@ -1,6 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ScannerType } from 'src/scanner/interfaces/scanner.interface';
-import { ScannersService } from 'src/scanner/Scanners.service';
+import { ScannersService } from 'src/scanner/scanners.service';
 import { UsersService } from 'src/users/users.service';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';

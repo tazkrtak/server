@@ -8,6 +8,6 @@ export class UsersController {
 
   @Get('/register')
   async register(): Promise<User> {
-    return this.usersService.register();
+    return this.usersService.create();
   }
 }
