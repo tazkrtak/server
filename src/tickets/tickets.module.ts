@@ -6,6 +6,7 @@ import { TicketsService } from './tickets.service';
 import { UsersService } from '../users/users.service';
 @Module({
   controllers: [TicketsController],
-  providers: [TicketsService, UsersService, ScannersService],
+  providers: [TicketsService],
+  imports:[UsersService, ScannersService]
 })
 export class TicketsModule {}
