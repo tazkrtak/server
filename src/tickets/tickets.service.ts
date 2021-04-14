@@ -1,30 +1,30 @@
+import * as OTPAuth from 'otpauth';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { Transaction } from '../transactions/interfaces/transaction.interface';
-import { totp } from 'otplib';
-import { Scanner } from 'src/scanner/interfaces/scanner.interface';
-import { User } from 'src/users/interfaces/user.interface';
+import { Scanner } from '../scanner/interfaces/scanner.interface';
+import { User } from '../users/interfaces/user.interface';
 
 @Injectable()
 export class TicketsService {
-  constructor() {
-    totp.options = {
-      ...totp.options,
-      digits: 6,
-      step: 30,
-      window: [0, 0],
-    };
-  }
-
   create(
     purchaseTicketDto: PurchaseTicketDto,
     user: User,
     consumer: Scanner,
   ): Ticket {
-    const isValid = totp.check(purchaseTicketDto.totp, user.secret);
+    const totpAuth = new OTPAuth.TOTP({
+      ...totpOptions,
+      secret: OTPAuth.Secret.fromB32(user.secret),
+    });
 
-    if (!isValid) {
+    const delta = totpAuth.validate({
+      token: purchaseTicketDto.totp,
+      window: 1,
+    });
+
+    if (delta === null) {
       throw new BadRequestException('Invalid Totp token.');
     }
 

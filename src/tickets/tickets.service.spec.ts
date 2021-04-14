@@ -1,10 +1,11 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { totp } from '@otplib/preset-default';
+import * as OTPAuth from 'otpauth';
+import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { TicketsService } from './tickets.service';
 import { User } from '../users/interfaces/user.interface';
 import { Scanner, ScannerType } from '../scanner/interfaces/scanner.interface';
-import { BadRequestException } from '@nestjs/common';
 
 describe('TicketsService', () => {
   let ticketsService: TicketsService;
@@ -34,7 +35,11 @@ describe('TicketsService', () => {
 
   describe('purchase', () => {
     it('should return a ticket', async () => {
-      const generated_totp = totp.generate('WKSFANU2PIIOF5GK');
+      const totpAuth = new OTPAuth.TOTP({
+        ...totpOptions,
+        secret: OTPAuth.Secret.fromB32(user.secret),
+      });
+      const generated_totp = totpAuth.generate();
       const body: PurchaseTicketDto = {
         userId: user.id,
         quantity: 2,
