@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { Scanner, ScannerType } from './interfaces/scanner.interface';
 
 @Injectable()
 export class ScannersService {
+  constructor(private readonly prisma: PrismaService) {}
+
   private readonly consumer: Scanner = {
     id: '3',
     type: ScannerType.Consumer,
