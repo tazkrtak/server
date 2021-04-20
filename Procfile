@@ -1,1 +1,1 @@
-web: yarn start:prod
+web: yarn db:push && yarn start:prod

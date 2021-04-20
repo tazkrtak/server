@@ -6,9 +6,12 @@ import { Ticket } from './interfaces/ticket.interface';
 import { Transaction } from '../transactions/interfaces/transaction.interface';
 import { Scanner } from '../scanner/interfaces/scanner.interface';
 import { User } from '../users/interfaces/user.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TicketsService {
+  constructor(private readonly prisma: PrismaService) {}
+
   create(
     purchaseTicketDto: PurchaseTicketDto,
     user: User,
