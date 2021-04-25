@@ -1,7 +1,6 @@
 import {
   PipeTransform,
   ArgumentMetadata,
-  BadRequestException,
   Type,
 } from '@nestjs/common';
 import { validate } from 'class-validator';
