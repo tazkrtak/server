@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import {
+  IFieldValidationError,
+  ValidationException,
+} from './validation-exception';
 
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
@@ -17,19 +21,17 @@ export class ValidationPipe implements PipeTransform<any> {
       whitelist: true,
       forbidUnknownValues: true,
       forbidNonWhitelisted: true,
+      stopAtFirstError: true,
     });
     if (errorsDetails.length > 0) {
       const errors = errorsDetails.map((e) => {
         return {
           field: e.property,
-          errors: Object.values(e.constraints),
-        };
+          error: Object.values(e.constraints)[0],
+        } as IFieldValidationError;
       });
 
-      throw new BadRequestException(
-        'Validation failed',
-        JSON.stringify(errors),
-      );
+      throw new ValidationException(errors);
     }
     return value;
   }
