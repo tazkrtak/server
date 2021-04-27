@@ -12,7 +12,7 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(): User {
-    const secret = new Secret({ size: 8 }).hex;
+    const secret = new Secret({ size: 16 }).b32;
     const key = crypto.randomBytes(16).toString('hex');
     const encryptedSecret = AES.encrypt(secret, key).toString();
 

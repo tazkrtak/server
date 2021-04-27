@@ -23,7 +23,7 @@ export class TicketsService {
 
     const totpAuth = new TOTP({
       ...totpOptions,
-      secret: Secret.fromHex(secret),
+      secret: Secret.fromB32(secret),
     });
 
     const delta = totpAuth.validate({
