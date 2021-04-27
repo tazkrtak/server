@@ -29,7 +29,7 @@ export class TicketsController {
   async purchase(
     @Body() purchaseTicketDto: PurchaseTicketDto,
   ): Promise<Ticket> {
-    const user = this.usersService.findOne(purchaseTicketDto.userId);
+    const user = await this.usersService.findOne(purchaseTicketDto.userId);
     const consumer = this.scannerService.findOne('3');
     return this.ticketsService.create(purchaseTicketDto, user, consumer);
   }
