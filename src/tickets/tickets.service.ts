@@ -1,4 +1,5 @@
-import * as OTPAuth from 'otpauth';
+import { AES, enc } from 'crypto-js';
+import { TOTP, Secret } from 'otpauth';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
@@ -17,9 +18,12 @@ export class TicketsService {
     user: User,
     consumer: Scanner,
   ): Ticket {
-    const totpAuth = new OTPAuth.TOTP({
+    const secretBytes = AES.decrypt(user.secret, purchaseTicketDto.userKey);
+    const secret = secretBytes.toString(enc.Utf8);
+
+    const totpAuth = new TOTP({
       ...totpOptions,
-      secret: OTPAuth.Secret.fromB32(user.secret),
+      secret: Secret.fromB32(secret),
     });
 
     const delta = totpAuth.validate({
@@ -49,6 +53,7 @@ export class TicketsService {
       checked_at: null,
       transaction: transaction,
     };
+
     return ticket;
   }
 }

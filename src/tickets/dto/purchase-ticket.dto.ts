@@ -5,6 +5,9 @@ export class PurchaseTicketDto implements BaseTicket {
   @IsString()
   userId: string;
 
+  @IsString()
+  userKey: string;
+
   @IsNumber()
   quantity: number;
 
