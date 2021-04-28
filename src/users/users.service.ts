@@ -1,56 +1,62 @@
 import crypto from 'crypto';
-import { AES } from 'crypto-js';
+import { Injectable } from '@nestjs/common';
 import { Secret } from 'otpauth';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UserDto } from './interfaces/user.interface';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
-import { NonUniqueException } from 'src/infrastructure/non-unique-exception';
+import { User } from '@prisma/client';
 
+import { LoginUserDto } from './dto/login-user.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterUserDto } from './dto/register-user.dto';
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(registerUserDto: RegisterUserDto): Promise<UserDto> {
-    const secret = new Secret({ size: 16 }).b32;
-    const key = crypto.randomBytes(16).toString('hex');
-    const encryptedSecret = AES.encrypt(secret, key).toString();
+  async create(
+    registerUserDto: RegisterUserDto,
+    encryptedSecret: string,
+  ): Promise<User> {
+    const prismaUser = await this.prisma.user.create({
+      data: {
+        ...registerUserDto,
+        secret: encryptedSecret,
+      },
+    });
 
-    let user: UserDto;
-    try {
-      user = await this.prisma.user.create({
-        data: {
-          ...registerUserDto,
-          secret: encryptedSecret,
-        },
-      });
-    } catch (err) {
-      throw new NonUniqueException(err);
-    }
-    return user;
+    return prismaUser;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<UserDto> {
-    const user = await this.prisma.user.findFirst({
+  async update(id: string, user: User) {
+    await this.prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        ...user,
+      },
+    });
+  }
+
+  async findUser(loginUserDto: LoginUserDto): Promise<User> {
+    const prismaUser = await this.prisma.user.findFirst({
       where: {
         id: loginUserDto.id,
         password: loginUserDto.password,
       },
     });
-    if (user === null) {
-      throw new NotFoundException('Incorrect user id or password.');
-    }
-
-    return user;
+    return prismaUser;
   }
 
-  async findOne(id: string): Promise<UserDto> {
-    const user = await this.prisma.user.findUnique({
+  async findOne(id: string): Promise<User> {
+    const prismaUser = await this.prisma.user.findUnique({
       where: {
         id: id,
       },
     });
-    return user;
+    return prismaUser;
+  }
+
+  createSecret(): { key: string; secret: string } {
+    const secret = new Secret({ size: 16 }).b32;
+    const key = crypto.randomBytes(16).toString('hex');
+    return { key, secret };
   }
 }

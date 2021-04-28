@@ -6,7 +6,7 @@ export class NonUniqueException extends HttpException {
     super(
       {
         statusCode: HttpStatus.CONFLICT,
-        message: 'Unique Constraint Failed',
+        message: `Unique Constraint Failed on ${validationErrors['meta']['target']} field.`,
         validationErrors,
       },
       HttpStatus.CONFLICT,

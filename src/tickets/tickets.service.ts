@@ -6,8 +6,8 @@ import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { Transaction } from '../transactions/interfaces/transaction.interface';
 import { Scanner } from '../scanner/interfaces/scanner.interface';
-import { UserDto } from '../users/interfaces/user.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '.prisma/client';
 
 @Injectable()
 export class TicketsService {
@@ -15,7 +15,7 @@ export class TicketsService {
 
   create(
     purchaseTicketDto: PurchaseTicketDto,
-    user: UserDto,
+    user: User,
     consumer: Scanner,
   ): Ticket {
     const secretBytes = AES.decrypt(user.secret, purchaseTicketDto.userKey);
