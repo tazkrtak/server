@@ -54,9 +54,9 @@ export class UsersService {
     return prismaUser;
   }
 
-  createSecret(): { key: string; secret: string } {
-    const secret = new Secret({ size: 16 }).b32;
-    const key = crypto.randomBytes(16).toString('hex');
-    return { key, secret };
+  createSecret(): { currentKey: string; currentSecret: string } {
+    const currentKey = crypto.randomBytes(16).toString('hex');
+    const currentSecret = new Secret({ size: 16 }).b32;
+    return { currentKey, currentSecret };
   }
 }

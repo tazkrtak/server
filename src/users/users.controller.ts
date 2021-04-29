@@ -1,3 +1,4 @@
+import { AES, SHA512 } from 'crypto-js';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   Body,
@@ -12,8 +13,6 @@ import { NonUniqueException } from '../infrastructure/non-unique-exception';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
-import { AES } from 'crypto-js';
-import { sha512 } from 'js-sha512';
 
 @ApiTags('users')
 @Controller('users')
@@ -26,15 +25,16 @@ export class UsersController {
   })
   @Post('/register')
   async register(@Body() registerUserDto: RegisterUserDto): Promise<UserDto> {
-    const { key, secret } = this.usersService.createSecret();
-    const encryptedSecret = AES.encrypt(secret, key).toString();
+    const { currentKey, currentSecret } = this.usersService.createSecret();
+    const encryptedSecret = AES.encrypt(currentSecret, currentKey).toString();
     try {
-      registerUserDto.password = sha512(registerUserDto.password);
-      const user = await this.usersService.create(
+      registerUserDto.password = SHA512(registerUserDto.password).toString();
+      const prismaUser = await this.usersService.create(
         registerUserDto,
         encryptedSecret,
       );
-      return { ...user, key };
+      const { secret, ...user } = prismaUser;
+      return { ...user, secret: currentSecret, key: currentKey };
     } catch (err) {
       throw new NonUniqueException(err);
     }
@@ -44,18 +44,18 @@ export class UsersController {
   @ApiCreatedResponse({ description: 'The user has successfully logged in.' })
   @Get('/login')
   async login(@Body() loginUserDto: LoginUserDto): Promise<UserDto> {
-    const { key, secret } = this.usersService.createSecret();
-    const encryptedSecret = AES.encrypt(secret, key).toString();
-    loginUserDto.password = sha512(loginUserDto.password);
+    const { currentKey, currentSecret } = this.usersService.createSecret();
+    const encryptedSecret = AES.encrypt(currentSecret, currentKey).toString();
+    loginUserDto.password = SHA512(loginUserDto.password).toString();
     const prismaUser = await this.usersService.findUser(loginUserDto);
     if (prismaUser == null) {
-      throw new UnauthorizedException('Incorrect user id or password.');
+      throw new UnauthorizedException('Incorrect id or password.');
     }
 
     prismaUser.secret = encryptedSecret;
     this.usersService.update(loginUserDto.id, prismaUser);
 
-    const { password, ...user } = prismaUser;
-    return { ...user, key };
+    const { password, secret, ...user } = prismaUser;
+    return { ...user, secret: currentSecret, key: currentKey };
   }
 }
