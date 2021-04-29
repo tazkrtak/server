@@ -5,8 +5,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Body, Controller, Post } from '@nestjs/common';
-import { ScannersService } from 'src/scanner/scanners.service';
-import { UsersService } from 'src/users/users.service';
+import { ScannersService } from '../scanner/scanners.service';
+import { UsersService } from '../users/users.service';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { TicketsService } from './tickets.service';

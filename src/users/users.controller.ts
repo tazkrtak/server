@@ -7,6 +7,7 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { NonUniqueException } from '../infrastructure/non-unique-exception';
@@ -33,10 +34,15 @@ export class UsersController {
         registerUserDto,
         encryptedSecret,
       );
-      const { secret, ...user } = prismaUser;
+      const { secret, password, ...user } = prismaUser;
       return { ...user, secret: currentSecret, key: currentKey };
-    } catch (err) {
-      throw new NonUniqueException(err);
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          throw new NonUniqueException((e.meta as any).target);
+        }
+      }
+      throw e;
     }
   }
 
