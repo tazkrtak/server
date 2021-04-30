@@ -1,9 +1,5 @@
 import { Prisma } from '@prisma/client';
-import {
-  IsEmail,
-  IsPhoneNumber,
-  IsString
-} from 'class-validator';
+import { IsEmail, IsPhoneNumber, IsString } from 'class-validator';
 import { LoginUserDto } from './login-user.dto';
 
 export class RegisterUserDto
