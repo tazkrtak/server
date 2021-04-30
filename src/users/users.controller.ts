@@ -1,9 +1,10 @@
-import { AES, SHA512 } from 'crypto-js';
-import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
   Get,
+  HttpStatus,
+  NotFoundException,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -20,22 +21,34 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Registers a new user.' })
-  @ApiCreatedResponse({
-    description: 'The user has been successfully created.',
-  })
   @Post('/register')
+  @ApiOperation({ summary: 'Registers a new user.' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'The user has been successfully created.',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Unique Constraint Failed',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation Failed',
+  })
   async register(@Body() registerUserDto: RegisterUserDto): Promise<UserDto> {
-    const { currentKey, currentSecret } = this.usersService.createSecret();
-    const encryptedSecret = AES.encrypt(currentSecret, currentKey).toString();
+    const { key, secret } = this.usersService.createSecret();
+
     try {
-      registerUserDto.password = SHA512(registerUserDto.password).toString();
       const prismaUser = await this.usersService.create(
-        registerUserDto,
-        encryptedSecret,
+        {
+          ...registerUserDto,
+          secret,
+        },
+        key,
       );
-      const { secret, password, ...user } = prismaUser;
-      return { ...user, secret: currentSecret, key: currentKey };
+
+      return UserDto.from(prismaUser, key, secret);
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -46,22 +59,37 @@ export class UsersController {
     }
   }
 
-  @ApiOperation({ summary: 'Logins a user.' })
-  @ApiCreatedResponse({ description: 'The user has successfully logged in.' })
   @Get('/login')
+  @ApiOperation({ summary: 'Logins a user.' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Successful log in' })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: `User doesn't exist`,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: `Incorrect id or password`,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation Failed',
+  })
   async login(@Body() loginUserDto: LoginUserDto): Promise<UserDto> {
-    const { currentKey, currentSecret } = this.usersService.createSecret();
-    const encryptedSecret = AES.encrypt(currentSecret, currentKey).toString();
-    loginUserDto.password = SHA512(loginUserDto.password).toString();
-    const prismaUser = await this.usersService.findUser(loginUserDto);
-    if (prismaUser == null) {
-      throw new UnauthorizedException('Incorrect id or password.');
+    const result = await this.usersService.authenticate(loginUserDto);
+    if (result == null) {
+      throw new NotFoundException(`User doesn't exist`);
     }
 
-    prismaUser.secret = encryptedSecret;
-    this.usersService.update(loginUserDto.id, prismaUser);
+    if (!result) {
+      throw new UnauthorizedException(`Incorrect National Id or Password`);
+    }
 
-    const { password, secret, ...user } = prismaUser;
-    return { ...user, secret: currentSecret, key: currentKey };
+    const { key, secret } = this.usersService.createSecret();
+    const user = await this.usersService.refreshSecret(
+      loginUserDto.national_id,
+      key,
+      secret,
+    );
+    return UserDto.from(user, key, secret);
   }
 }
