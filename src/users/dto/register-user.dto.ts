@@ -2,10 +2,7 @@ import { Prisma } from '@prisma/client';
 import {
   IsEmail,
   IsPhoneNumber,
-  IsString,
-  Length,
-  Matches,
-  MinLength,
+  IsString
 } from 'class-validator';
 import { LoginUserDto } from './login-user.dto';
 

@@ -1,4 +1,4 @@
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 
 export class UserDto implements Omit<User, 'password'> {
   national_id: string;
