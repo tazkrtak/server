@@ -1,1 +1,1 @@
-web: yarn db:push && yarn start:prod
+web: yarn db:migrate-prod && yarn start:prod
