@@ -32,48 +32,74 @@ DTO stands for Data Transfer Object, keep in mind that they're the interface to 
 
 2. Response DTO: Expose only the set of attributes needed from persistence entities.
 
-### Request DTOs' Validation Guidelines
+#### Request DTOs' Data Structure
 
-Annotate DTO class properties you want to validate with [class-validator decorators](https://github.com/typestack/class-validator#usage).
+As we use [Prisma](https://www.prisma.io/), every model from Prisma schema is translated into a dedicated TypeScript type, so we can derive our DTOs from those types using [Utility Types feature](https://www.typescriptlang.org/docs/handbook/utility-types.html) in Typescript
 
-#### Example
+Example
 
-```(typescript)
-import {
-  IsString,
-  Length,
-  IsEmail
-} from 'class-validator';
+```typescript
+import { User } from '@prisma/client';
 
-export class FooRequestDto {
+export class LoginUserDto implements Pick<User, 'email' | 'password'> {}
+
+export class RegisterUserDto implements Omit<User, 'id'> {}
+```
+
+#### Request DTOs' Validation Guidelines
+
+- Annotate DTO class properties you want to validate with [class-validator decorators](https://github.com/typestack/class-validator#usage).
+- Extend DTOs from each other when it's possible; to minimize duplication of boilerplate code used for validation.
+
+Example
+
+```typescript
+import { IsString, Length, IsEmail, MinLength } from 'class-validator';
+
+export class UserLoginDto {
+  @IsEmail()
+  email: string;
+
+  @MinLength(8)
+  password: string;
+}
+
+export class UserRegisterDto extends UserLoginDto {
   @IsString()
   @Length(10, 20) // match with database scheme
   name: string;
 
-  @IsEmail()
-  email: string;
+  @IsPhoneNumber()
+  phone_number: string;
 }
 ```
 
 ### [OpenApi (Swagger)](https://swagger.io/) Guidelines
 
-1. Follow the convention `\*.dto.ts` for DTO classes so they can be recognized by Swagger.
+1. Follow the convention `.*.dto.ts` for DTO **classes** so they can be recognized by Swagger.
 
-2. Annotate controllers with @ApiTags('CONTROLLER_NAME') for better categorization.
+2. Annotate controllers with `@ApiTags('CONTROLLER_NAME')` for better categorization.
 
 3. Annotate controller methods with:
 
-   - Multiple `@Api(Type)Response({ description })` decorators according to the possible responses.
-
-   ```(typescript)
-       @ApiCreatedResponse({ description: 'The user has been successfully created.' })
-       @ApiBadRequestResponse({ description: 'Invalid Request.' })
-       @Post()
-       async createUser(@Body() createUserRequestDto: CreateUserRequestDto): Promise<UserDto>
-   ```
-
    - `@ApiOperation({ summary })` decorator describing the method's purpose.
+   - Multiple `@ApiResponse({ status, description, type (if exist and not an exception response) })` decorators according to the possible responses.
+   - `@ApiResponse({ status: HttpStatus, description: '[Response Description]' })` on all controller methods as we have a [Pipe](https://docs.nestjs.com/pipes) that validates all request bodies.
+   - All Swagger decorators must be put after the HTTP request method decorator [e.g. `@Post()`]
 
-   ```(typescript)
-       @ApiOperation({ summary: 'Creates a new user' })
-   ```
+Example
+
+```typescript
+    @Post()
+    @ApiOperation({ summary: 'Creates a new user' })
+    @ApiResponse({
+        status: HttpStatus.CREATED,
+        description: 'The user has been successfully created.',
+        type: UserDto,
+     })
+    @ApiResponse({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        description: 'Validation Failed',
+    })
+    async createUser(@Body() createUserRequestDto: CreateUserRequestDto): Promise<UserDto>
+```
