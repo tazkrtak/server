@@ -84,7 +84,7 @@ export class UserRegisterDto extends UserLoginDto {
 
    - `@ApiOperation({ summary })` decorator describing the method's purpose.
    - Multiple `@ApiResponse({ status, description, type (if exist and not an exception response) })` decorators according to the possible responses.
-   - `@ApiResponse({ status: HttpStatus, description: '[Response Description]' })` on all controller methods as we have a [Pipe](https://docs.nestjs.com/pipes) that validates all request bodies.
+   - `@ApiResponse({ status: HttpStatus.UNPROCESSABLE_ENTITY, description: 'Validation Failed' })` on all controller methods as we have a [Pipe](https://docs.nestjs.com/pipes) that validates all request bodies.
    - All Swagger decorators must be put after the HTTP request method decorator [e.g. `@Post()`]
 
 Example
