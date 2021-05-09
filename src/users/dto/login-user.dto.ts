@@ -3,7 +3,7 @@ import { IsString, Length, Matches, MinLength } from 'class-validator';
 
 export class LoginUserDto implements Pick<User, 'national_id' | 'password'> {
   @IsString()
-  @Length(14)
+  @Length(14, 14, { message: 'National Id must contain exactly 14 numbers' })
   national_id: string;
 
   @IsString()
