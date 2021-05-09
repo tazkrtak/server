@@ -9,7 +9,7 @@ export class RegisterUserDto
   @IsEmail()
   email: string;
 
-  @IsPhoneNumber()
+  @IsPhoneNumber('EG')
   phone_number: string;
 
   @IsString()

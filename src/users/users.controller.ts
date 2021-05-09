@@ -61,7 +61,11 @@ export class UsersController {
 
   @Get('/login')
   @ApiOperation({ summary: 'Logins a user.' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successful log in' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successful log in',
+    type: UserDto,
+  })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: `User doesn't exist`,
