@@ -59,7 +59,7 @@ export class UsersController {
     }
   }
 
-  @Get('/login')
+  @Post('/login')
   @ApiOperation({ summary: 'Logins a user.' })
   @ApiResponse({
     status: HttpStatus.OK,
