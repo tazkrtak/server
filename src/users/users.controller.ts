@@ -2,7 +2,6 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
-  Get,
   HttpStatus,
   NotFoundException,
   Post,
@@ -59,7 +58,7 @@ export class UsersController {
     }
   }
 
-  @Get('/login')
+  @Post('/login')
   @ApiOperation({ summary: 'Logins a user.' })
   @ApiResponse({
     status: HttpStatus.OK,
