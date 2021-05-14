@@ -3,4 +3,5 @@ export interface Transaction {
   userId: string;
   amount: number;
   referenceId: string;
+  createdAt: Date;
 }

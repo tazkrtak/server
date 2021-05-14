@@ -40,6 +40,7 @@ export class TicketsService {
       userId: user.id,
       amount: purchaseTicketDto.quantity * purchaseTicketDto.price,
       referenceId: null,
+      createdAt: new Date(Date.now()),
     };
 
     const ticket: Ticket = {
