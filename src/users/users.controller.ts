@@ -1,11 +1,21 @@
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import {
   Body,
   Controller,
+  Get,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   Post,
+  Request,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
@@ -14,11 +24,30 @@ import { NonUniqueException } from '../infrastructure/non-unique-exception';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
+import { JwtService } from '@nestjs/jwt';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { JwtRequest } from '../auth/interfaces/jwt-request.interface';
+import { UserProfileDto } from './dto/user-profile.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: `Gets the user's profile.` })
+  @ApiUnauthorizedResponse({ description: 'Invalid JWT Token' })
+  async getProfile(@Request() req: JwtRequest): Promise<UserProfileDto> {
+    const { user_id } = req;
+    const user = await this.usersService.findOne(user_id);
+    return UserProfileDto.from(user);
+  }
 
   @Post('/register')
   @ApiOperation({ summary: 'Registers a new user.' })
@@ -39,7 +68,7 @@ export class UsersController {
     const { key, secret } = this.usersService.createSecret();
 
     try {
-      const prismaUser = await this.usersService.create(
+      const user = await this.usersService.create(
         {
           ...registerUserDto,
           secret,
@@ -47,7 +76,10 @@ export class UsersController {
         key,
       );
 
-      return UserDto.from(prismaUser, key, secret);
+      const payload: JwtPayload = { user_id: user.id };
+      const token = this.jwtService.sign(payload);
+
+      return UserDto.from(user, key, secret, token);
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
@@ -59,6 +91,7 @@ export class UsersController {
   }
 
   @Post('/login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Logins a user.' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -93,6 +126,10 @@ export class UsersController {
       key,
       secret,
     );
-    return UserDto.from(user, key, secret);
+
+    const payload: JwtPayload = { user_id: user.id };
+    const token = this.jwtService.sign(payload);
+
+    return UserDto.from(user, key, secret, token);
   }
 }
