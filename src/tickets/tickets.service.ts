@@ -4,10 +4,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
-import { Transaction } from '../transactions/interfaces/transaction.interface';
 import { Scanner } from '../scanner/interfaces/scanner.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '.prisma/client';
+import { Transaction } from '@prisma/client';
 
 @Injectable()
 export class TicketsService {
@@ -37,10 +37,10 @@ export class TicketsService {
 
     const transaction: Transaction = {
       id: '1',
-      userId: user.id,
+      user_id: user.id,
       amount: purchaseTicketDto.quantity * purchaseTicketDto.price,
-      referenceId: null,
-      createdAt: new Date(Date.now()),
+      reference_id: null,
+      created_at: new Date(Date.now()),
     };
 
     const ticket: Ticket = {

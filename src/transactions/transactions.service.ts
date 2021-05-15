@@ -1,7 +1,8 @@
-import { Prisma, Transaction } from '.prisma/client';
+import { Transaction } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
+import { PaginationBody } from 'src/infrastructure/interfaces/pagination-body.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { GetTransactionsDto } from './dto/get-transactions.dto';
+import { TransactionFilter } from './interfaces/tranasaction-filter';
 
 @Injectable()
 export class TransactionsService {
@@ -9,21 +10,31 @@ export class TransactionsService {
 
   async findAll(
     userId: string,
-    getTransactionsDto: GetTransactionsDto,
+    body: PaginationBody<TransactionFilter>,
   ): Promise<Transaction[]> {
-    const allTransactions = this.prisma.transaction.findMany({
-      skip: (getTransactionsDto.pageNumber - 1) * getTransactionsDto.pageSize,
-      take: getTransactionsDto.pageSize,
+    return this.prisma.transaction.findMany({
+      skip: (body.page - 1) * body.pageSize,
+      take: body.pageSize,
       where: {
         user_id: userId,
         created_at: {
-          gte: getTransactionsDto.startDate,
+          gte: body.filter.startDate,
         },
       },
       orderBy: {
         created_at: 'desc',
       },
     });
-    return allTransactions;
+  }
+
+  async GetTotal(userId: string, startDate: Date): Promise<number> {
+    return this.prisma.transaction.count({
+      where: {
+        user_id: userId,
+        created_at: {
+          gte: startDate,
+        },
+      },
+    });
   }
 }
