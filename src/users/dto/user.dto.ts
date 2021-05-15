@@ -10,8 +10,9 @@ export class UserDto implements Omit<User, 'password'> {
   secret: string;
   created_at: Date;
   key: string;
+  token: string;
 
-  static from(user: User, key: string, secret: string): UserDto {
+  static from(user: User, key: string, secret: string, token: string): UserDto {
     return {
       id: user.id,
       national_id: user.national_id,
@@ -22,6 +23,7 @@ export class UserDto implements Omit<User, 'password'> {
       full_name: user.full_name,
       secret,
       key,
+      token,
     };
   }
 }
