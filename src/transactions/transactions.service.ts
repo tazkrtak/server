@@ -8,20 +8,16 @@ export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(
+    userId: string,
     getTransactionsDto: GetTransactionsDto,
   ): Promise<Transaction[]> {
     const allTransactions = this.prisma.transaction.findMany({
-      skip:
-        (getTransactionsDto.pageNumber - 1) * (getTransactionsDto.pageSize - 1),
+      skip: (getTransactionsDto.pageNumber - 1) * getTransactionsDto.pageSize,
       take: getTransactionsDto.pageSize,
       where: {
-        user_id: getTransactionsDto.userId,
-        AND: {
-          created_at: {},
-        },
+        user_id: userId,
         created_at: {
-          gt: getTransactionsDto.startDate,
-          lte: new Date(Date.now()),
+          gte: getTransactionsDto.startDate,
         },
       },
       orderBy: {

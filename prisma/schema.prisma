@@ -21,10 +21,10 @@ model User {
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [user_id], references: [id])
-  user_id     String
-  amount      Float
-  referenceId String?
-  created_at  DateTime @default(now())
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [user_id], references: [id])
+  user_id      String
+  amount       Float
+  reference_id String?
+  created_at   DateTime @default(now())
 }

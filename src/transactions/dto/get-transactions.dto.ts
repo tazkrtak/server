@@ -1,15 +1,12 @@
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDateString, IsNumber } from 'class-validator';
 
 export class GetTransactionsDto {
-  @IsString()
-  userId: string;
-
   @IsNumber()
   pageNumber: number;
 
   @IsNumber()
   pageSize: number;
 
-  @IsDate()
+  @IsDateString()
   startDate: Date;
 }
