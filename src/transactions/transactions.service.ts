@@ -1,24 +1,25 @@
-import { Transaction } from '.prisma/client';
+import { Transaction } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
-import { PaginationBody } from 'src/infrastructure/interfaces/pagination-body.interface';
+import { PaginatedQuery } from 'src/infrastructure/pagination/paginated-query';
 import { PrismaService } from '../prisma/prisma.service';
-import { TransactionFilterDto } from './dto/tranasaction-filter.dto';
+import { DateFilterDto } from './dto/date-filter.dto';
 
 @Injectable()
 export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(
+  findAll(
     userId: string,
-    body: PaginationBody<TransactionFilterDto>,
+    query: PaginatedQuery<DateFilterDto>,
   ): Promise<Transaction[]> {
+    const offset = (query.page - 1) * query.page_size;
     return this.prisma.transaction.findMany({
-      skip: (body.page - 1) * body.pageSize,
-      take: body.pageSize,
+      skip: offset,
+      take: query.page_size,
       where: {
         user_id: userId,
         created_at: {
-          gte: body.filter.startDate,
+          gte: query.filter.from,
         },
       },
       orderBy: {
@@ -27,12 +28,12 @@ export class TransactionsService {
     });
   }
 
-  async GetTotal(userId: string, startDate: Date): Promise<number> {
+  count(userId: string, query: PaginatedQuery<DateFilterDto>): Promise<number> {
     return this.prisma.transaction.count({
       where: {
         user_id: userId,
         created_at: {
-          gte: startDate,
+          gte: query.filter.from,
         },
       },
     });

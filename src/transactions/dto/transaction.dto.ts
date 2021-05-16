@@ -12,7 +12,7 @@ export class TransactionDto
       id: transaction.id,
       amount: transaction.amount,
       created_at: transaction.created_at,
-      title: transaction.amount > 0 ? 'Recharge' : 'Pay for bus',
+      title: transaction.amount > 0 ? 'Recharge' : 'Pay for bus', // TODO: add with bus number
     };
   }
 }

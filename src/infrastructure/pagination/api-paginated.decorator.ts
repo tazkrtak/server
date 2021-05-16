@@ -5,14 +5,14 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { PaginationBody } from './pagination-body.interface';
-import { PaginationResponse } from './pagination-response.interface';
+import { PaginatedQuery } from './paginated-query';
+import { PaginatedDto } from './paginated-dto';
 
 /**
- * A decorator for paginated endpoints.
- * 
- * @param filter the filter used in `PaginationBody`
- * @param model the model used in `PaginationResponse`
+ * A decorator for paginated endpoints
+ *
+ * @param filter the filter used in `PaginatedQuery`
+ * @param model the model used in `PaginatedDto`
  */
 export const ApiPaginated = <TFilter extends Type, TModel extends Type>(
   filter: TFilter,
@@ -22,9 +22,9 @@ export const ApiPaginated = <TFilter extends Type, TModel extends Type>(
     ApiExtraModels(filter, model),
     ApiBody({
       schema: {
-        title: 'PaginationBody',
+        title: 'PaginatedQuery',
         allOf: [
-          { $ref: getSchemaPath(PaginationBody) },
+          { $ref: getSchemaPath(PaginatedQuery) },
           {
             properties: {
               filter: {
@@ -37,9 +37,9 @@ export const ApiPaginated = <TFilter extends Type, TModel extends Type>(
     }),
     ApiOkResponse({
       schema: {
-        title: 'PaginationResponse',
+        title: 'PaginatedDto',
         allOf: [
-          { $ref: getSchemaPath(PaginationResponse) },
+          { $ref: getSchemaPath(PaginatedDto) },
           {
             properties: {
               items: {

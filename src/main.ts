@@ -1,8 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { PaginationBody } from './infrastructure/interfaces/pagination-body.interface';
-import { PaginationResponse } from './infrastructure/interfaces/pagination-response.interface';
+import { PaginatedDto, PaginatedQuery } from './infrastructure/pagination';
 import { ValidationPipe } from './infrastructure/validator';
 
 async function bootstrap() {
@@ -17,7 +16,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [PaginationBody, PaginationResponse],
+    extraModels: [PaginatedQuery, PaginatedDto],
   });
 
   SwaggerModule.setup('/', app, document);

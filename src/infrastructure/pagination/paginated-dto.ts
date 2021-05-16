@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PaginationResponse<T> {
+export class PaginatedDto<T> {
   @ApiProperty()
   page: number;
 
   @ApiProperty()
-  pageSize: number;
+  page_size: number;
 
   @ApiProperty()
-  lastPage: boolean;
+  is_last: boolean;
 
   @ApiProperty()
   total: number;

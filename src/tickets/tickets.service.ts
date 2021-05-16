@@ -6,8 +6,7 @@ import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { Ticket } from './interfaces/ticket.interface';
 import { Scanner } from '../scanner/interfaces/scanner.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '.prisma/client';
-import { Transaction } from '@prisma/client';
+import { Transaction, User } from '@prisma/client';
 
 @Injectable()
 export class TicketsService {
