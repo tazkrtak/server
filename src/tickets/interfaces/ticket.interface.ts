@@ -1,4 +1,4 @@
-import { Transaction } from '../../transactions/interfaces/transaction.interface';
+import { Transaction } from '@prisma/client';
 
 export interface BaseTicket {
   userId: string;
