@@ -1,6 +1,6 @@
 import { IsDateString } from 'class-validator';
 
-export class TransactionFilter {
+export class TransactionFilterDto {
   @IsDateString()
   startDate: Date;
 }

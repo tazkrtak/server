@@ -2,7 +2,7 @@ import { Transaction } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PaginationBody } from 'src/infrastructure/interfaces/pagination-body.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { TransactionFilter } from './interfaces/tranasaction-filter';
+import { TransactionFilterDto } from './dto/tranasaction-filter.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -10,7 +10,7 @@ export class TransactionsService {
 
   async findAll(
     userId: string,
-    body: PaginationBody<TransactionFilter>,
+    body: PaginationBody<TransactionFilterDto>,
   ): Promise<Transaction[]> {
     return this.prisma.transaction.findMany({
       skip: (body.page - 1) * body.pageSize,
