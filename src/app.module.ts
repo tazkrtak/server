@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { ScannersModule } from './scanner/scanners.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ScannersModule } from './scanner/scanners.module';
     AuthModule,
     ScannersModule,
     TicketsModule,
+    TransactionsModule,
     UsersModule,
   ],
 })
