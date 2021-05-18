@@ -1,22 +1,24 @@
 import { AES, enc } from 'crypto-js';
 import { TOTP, Secret } from 'otpauth';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
-import { Ticket } from './interfaces/ticket.interface';
-import { Scanner } from '../scanner/interfaces/scanner.interface';
 import { PrismaService } from '../prisma/prisma.service';
-import { Transaction, User } from '@prisma/client';
+import { User, Ticket, Scanner } from '@prisma/client';
+import { TransactionsService } from 'src/transactions/transactions.service';
 
 @Injectable()
 export class TicketsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly transactionsService: TransactionsService,
+  ) {}
 
-  create(
+  async create(
     purchaseTicketDto: PurchaseTicketDto,
     user: User,
     consumer: Scanner,
-  ): Ticket {
+  ): Promise<Ticket> {
     const secretBytes = AES.decrypt(user.secret, purchaseTicketDto.userKey);
     const secret = secretBytes.toString(enc.Utf8);
 
@@ -31,29 +33,23 @@ export class TicketsService {
     });
 
     if (delta === null) {
-      throw new BadRequestException('Invalid Totp token.');
+      return null;
     }
 
-    const transaction: Transaction = {
-      id: '1',
-      user_id: user.id,
-      amount: purchaseTicketDto.quantity * purchaseTicketDto.price,
-      reference_id: null,
+    const transaction = await this.transactionsService.create(user.id, {
+      amount: -1 * purchaseTicketDto.quantity * purchaseTicketDto.price,
       created_at: new Date(Date.now()),
-    };
+      reference_id: null,
+    });
 
-    const ticket: Ticket = {
-      id: '1',
-      userId: user.id,
-      quantity: purchaseTicketDto.quantity,
-      price: purchaseTicketDto.price,
-      scanned_by: consumer.id,
-      scanned_at: new Date(Date.now()),
-      checked_by: null,
-      checked_at: null,
-      transaction: transaction,
-    };
-
-    return ticket;
+    return this.prisma.ticket.create({
+      data: {
+        user_id: user.id,
+        price: purchaseTicketDto.price,
+        quantity: purchaseTicketDto.quantity,
+        scanned_by: consumer.id,
+        transaction_id: transaction.id,
+      },
+    });
   }
 }

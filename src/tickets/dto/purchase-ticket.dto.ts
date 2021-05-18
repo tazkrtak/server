@@ -1,7 +1,6 @@
 import { IsNumber, IsString, Length } from 'class-validator';
-import { BaseTicket } from '../interfaces/ticket.interface';
 
-export class PurchaseTicketDto implements BaseTicket {
+export class PurchaseTicketDto {
   @IsString()
   userId: string;
 
