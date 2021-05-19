@@ -3,13 +3,18 @@ import { Injectable } from '@nestjs/common';
 import { Secret } from 'otpauth';
 import { Prisma, User } from '@prisma/client';
 
+import { AES, SHA512 } from 'crypto-js';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { AES, SHA512 } from 'crypto-js';
+import { RechargeCreditDto } from './dto/recharge-credit.dto';
+import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly transactionsService: TransactionsService,
+  ) {}
 
   createSecret(): { key: string; secret: string } {
     const key = crypto.randomBytes(16).toString('hex');
@@ -62,6 +67,36 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: {
         id: id,
+      },
+    });
+  }
+
+  async updateCredit(
+    rechargeCreditDto: RechargeCreditDto,
+    user_id: string,
+  ): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: user_id,
+      },
+    });
+
+    if (user == null) return null;
+
+    const newCredit = user.credit + rechargeCreditDto.recharge_amount;
+    await this.transactionsService.create(user.id, {
+      amount: rechargeCreditDto.recharge_amount,
+      created_at: new Date(Date.now()),
+      // TODO: Check ID Val
+      reference_id: '123',
+    });
+
+    return this.prisma.user.update({
+      where: {
+        national_id: user.national_id,
+      },
+      data: {
+        credit: newCredit,
       },
     });
   }

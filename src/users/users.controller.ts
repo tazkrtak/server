@@ -29,6 +29,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { JwtRequest } from '../auth/interfaces/jwt-request.interface';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { RechargeCreditDto } from './dto/recharge-credit.dto';
+import { User } from '.prisma/client';
 
 @ApiTags('users')
 @Controller('users')
@@ -131,5 +133,34 @@ export class UsersController {
     const token = this.jwtService.sign(payload);
 
     return UserDto.from(user, key, secret, token);
+  }
+
+  @Post('/recharge')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Recharges the user credit.' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Successful recharge.',
+    type: UserDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'Validation Failed',
+  })
+  async recharge(
+    @Request() req: JwtRequest,
+    @Body() rechargeCreditDto: RechargeCreditDto,
+  ): Promise<User> {
+    const { user_id } = req;
+
+    const result = await this.usersService.updateCredit(
+      rechargeCreditDto,
+      user_id,
+    );
+
+    if (result == null) throw new NotFoundException(`User doesn't exist`);
+
+    return result;
   }
 }
