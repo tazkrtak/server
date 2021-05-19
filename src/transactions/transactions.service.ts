@@ -1,4 +1,4 @@
-import { Transaction } from '@prisma/client';
+import { Prisma, Transaction } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PaginatedQuery } from 'src/infrastructure/pagination/paginated-query';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,18 @@ import { DateFilterDto } from './dto/date-filter.dto';
 @Injectable()
 export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  create(
+    userId: string,
+    transactionCreateInput: Omit<Prisma.TransactionCreateInput, 'user'>,
+  ) {
+    return this.prisma.transaction.create({
+      data: {
+        ...transactionCreateInput,
+        user_id: userId,
+      },
+    });
+  }
 
   findAll(
     userId: string,

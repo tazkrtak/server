@@ -7,6 +7,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum CarrierType {
+  bus
+  metro
+}
+
+enum ScannerType {
+  consumer
+  checker
+}
+
 model User {
   id           String        @id @default(uuid())
   email        String        @unique
@@ -18,6 +28,7 @@ model User {
   secret       String
   created_at   DateTime      @default(now())
   transactions Transaction[]
+  Ticket       Ticket[]
 }
 
 model Transaction {
@@ -27,4 +38,38 @@ model Transaction {
   amount       Float
   reference_id String?
   created_at   DateTime @default(now())
+  Ticket       Ticket[]
+}
+
+model Carrier {
+  id      String      @id @default(uuid())
+  number  Int
+  type    CarrierType
+  Scanner Scanner[]
+}
+
+model Scanner {
+  id              String      @id @default(uuid())
+  type            ScannerType
+  carrier         Carrier     @relation(fields: [carrier_id], references: [id])
+  carrier_id      String
+  valid_prices    Int[]
+  scanned_tickets Ticket[]    @relation("scannedTickets")
+  checked_tickets Ticket[]    @relation("checkedTickets")
+}
+
+model Ticket {
+  id             String      @id @default(uuid())
+  user           User        @relation(fields: [user_id], references: [id])
+  user_id        String
+  quantity       Int
+  price          Float
+  scanner        Scanner     @relation("scannedTickets", fields: [scanned_by], references: [id])
+  scanned_by     String
+  scanned_at     DateTime    @default(now())
+  checker        Scanner?    @relation("checkedTickets", fields: [checked_by], references: [id])
+  checked_by     String?
+  checked_at     DateTime    @default(now())
+  transaction    Transaction @relation(fields: [transaction_id], references: [id])
+  transaction_id String
 }
