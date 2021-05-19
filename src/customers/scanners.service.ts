@@ -6,13 +6,13 @@ import { Scanner, Prisma } from '@prisma/client';
 export class ScannersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
+  create(
     carrierId: string,
-    scannerCreateInput: Omit<Prisma.ScannerCreateInput, 'carrier'>,
+    input: Omit<Prisma.ScannerCreateInput, 'carrier'>,
   ): Promise<Scanner> {
     return this.prisma.scanner.create({
       data: {
-        ...scannerCreateInput,
+        ...input,
         carrier_id: carrierId,
       },
     });

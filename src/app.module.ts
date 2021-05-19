@@ -6,10 +6,11 @@ import { CustomersModule } from './customers/customers.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { UsersModule } from './users/users.module';
+
 @Module({
   imports: [
+    ConfigModule.forRoot(), // always first
     AuthModule,
-    ConfigModule.forRoot(),
     CustomersModule,
     TicketsModule,
     TransactionsModule,

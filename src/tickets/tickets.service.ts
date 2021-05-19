@@ -1,11 +1,11 @@
 import { AES, enc } from 'crypto-js';
 import { TOTP, Secret } from 'otpauth';
 import { Injectable } from '@nestjs/common';
+import { User, Ticket, Scanner } from '@prisma/client';
 import { totpOptions } from '../util/totp-config';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, Ticket, Scanner } from '@prisma/client';
-import { TransactionsService } from 'src/transactions/transactions.service';
+import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class TicketsService {
@@ -32,9 +32,7 @@ export class TicketsService {
       window: 1,
     });
 
-    if (delta === null) {
-      return null;
-    }
+    if (delta === null) return null;
 
     const transaction = await this.transactionsService.create(user.id, {
       amount: -1 * purchaseTicketDto.quantity * purchaseTicketDto.price,

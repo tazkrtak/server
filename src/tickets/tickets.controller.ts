@@ -4,13 +4,13 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { PurchaseTicketDto } from './dto/purchase-ticket.dto';
 import { ScannersService } from '../customers/scanners.service';
 import { CarrierType, ScannerType, Ticket } from '@prisma/client';
 import { TicketsService } from './tickets.service';
 import { UsersService } from '../users/users.service';
-import { CarriersService } from 'src/customers/carrier.service';
-import { ApiTags } from '@nestjs/swagger';
+import { CarriersService } from '../customers/carrier.service';
 
 @ApiTags('tickets')
 @Controller('tickets')
