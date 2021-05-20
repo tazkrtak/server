@@ -24,15 +24,11 @@ import {
   PaginatedQuery,
 } from '../infrastructure/pagination';
 import { TransactionsSummaryDto } from './dto/transactions-summary.dto';
-import { UsersService } from '../users/users.service';
 
 @ApiTags('transactions')
 @Controller('transactions')
 export class TransactionsController {
-  constructor(
-    private readonly transactionService: TransactionsService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly transactionService: TransactionsService) { }
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -71,7 +67,6 @@ export class TransactionsController {
   ): Promise<TransactionsSummaryDto> {
     const { user_id } = req;
 
-    const credit = await this.usersService.getCredit(user_id);
     const spent = await this.transactionService.sum(user_id, filter, {
       lt: 0,
     });
@@ -79,6 +74,6 @@ export class TransactionsController {
       gt: 0,
     });
 
-    return TransactionsSummaryDto.from(credit, -spent, recharged);
+    return TransactionsSummaryDto.from(-spent, recharged);
   }
 }

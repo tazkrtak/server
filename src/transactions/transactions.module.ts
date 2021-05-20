@@ -9,6 +9,6 @@ import { TransactionsService } from './transactions.service';
   controllers: [TransactionsController],
   providers: [TransactionsService],
   exports: [TransactionsService],
-  imports: [PrismaModule, AuthModule, UsersModule],
+  imports: [PrismaModule, AuthModule],
 })
-export class TransactionsModule {}
+export class TransactionsModule { }
