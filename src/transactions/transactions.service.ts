@@ -50,4 +50,23 @@ export class TransactionsService {
       },
     });
   }
+
+  async sum(
+    userId: string,
+    filter: DateFilterDto,
+    amountFilter: Prisma.FloatFilter,
+  ): Promise<number> {
+    const result = await this.prisma.transaction.aggregate({
+      sum: { amount: true },
+      where: {
+        amount: amountFilter,
+        user_id: userId,
+        created_at: {
+          gte: filter.from,
+        },
+      },
+    });
+
+    return result.sum.amount;
+  }
 }
