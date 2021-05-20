@@ -8,16 +8,30 @@ import { DateFilterDto } from './dto/date-filter.dto';
 export class TransactionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(
+  async create(
     userId: string,
     transactionCreateInput: Omit<Prisma.TransactionCreateInput, 'user'>,
-  ) {
-    return this.prisma.transaction.create({
-      data: {
-        ...transactionCreateInput,
-        user_id: userId,
-      },
-    });
+  ): Promise<Transaction> {
+    const [transaction] = await this.prisma.$transaction([
+      this.prisma.transaction.create({
+        data: {
+          ...transactionCreateInput,
+          user_id: userId,
+        },
+      }),
+      this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          credit: {
+            increment: transactionCreateInput.amount,
+          },
+        },
+      }),
+    ]);
+
+    return transaction;
   }
 
   findAll(

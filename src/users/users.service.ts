@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { Secret } from 'otpauth';
 import { Prisma, User } from '@prisma/client';
 
+import { AES, SHA512 } from 'crypto-js';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { AES, SHA512 } from 'crypto-js';
 
 @Injectable()
 export class UsersService {
@@ -64,5 +64,15 @@ export class UsersService {
         id: id,
       },
     });
+  }
+
+  async getCredit(id: string): Promise<number> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    return user.credit;
   }
 }
