@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
@@ -8,6 +9,6 @@ import { TransactionsService } from './transactions.service';
   controllers: [TransactionsController],
   providers: [TransactionsService],
   exports: [TransactionsService],
-  imports: [PrismaModule, AuthModule],
+  imports: [PrismaModule, AuthModule, UsersModule],
 })
 export class TransactionsModule {}

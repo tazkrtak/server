@@ -65,4 +65,14 @@ export class UsersService {
       },
     });
   }
+
+  async getCredit(id: string): Promise<number> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    return user.credit;
+  }
 }

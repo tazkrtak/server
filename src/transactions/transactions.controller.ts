@@ -14,8 +14,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
-import { JwtRequest } from 'src/auth/interfaces/jwt-request.interface';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtRequest } from '../auth/interfaces/jwt-request.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { DateFilterDto } from './dto/date-filter.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import {
@@ -23,11 +23,16 @@ import {
   PaginatedDto,
   PaginatedQuery,
 } from '../infrastructure/pagination';
+import { TransactionsSummaryDto } from './dto/transactions-summary.dto';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('transactions')
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionsService) {}
+  constructor(
+    private readonly transactionService: TransactionsService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -52,5 +57,28 @@ export class TransactionsController {
       total,
       items: transactions.map(TransactionDto.from),
     };
+  }
+
+  @Post('/summary')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Gets summary of transactions' })
+  @ApiUnauthorizedResponse({ description: 'Invalid JWT Token' })
+  async getSummary(
+    @Request() req: JwtRequest,
+    @Body() filter: DateFilterDto,
+  ): Promise<TransactionsSummaryDto> {
+    const { user_id } = req;
+
+    const credit = await this.usersService.getCredit(user_id);
+    const spent = await this.transactionService.sum(user_id, filter, {
+      lt: 0,
+    });
+    const recharged = await this.transactionService.sum(user_id, filter, {
+      gt: 0,
+    });
+
+    return TransactionsSummaryDto.from(credit, -spent, recharged);
   }
 }
