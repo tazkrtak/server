@@ -32,6 +32,7 @@ import { UserProfileDto } from './dto/user-profile.dto';
 import { RechargeCreditDto } from './dto/recharge-credit.dto';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { TransactionDto } from 'src/transactions/dto/transaction.dto';
+import { CreditDto } from './dto/credit.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -40,7 +41,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly transactionsService: TransactionsService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
@@ -156,13 +157,27 @@ export class UsersController {
   ): Promise<TransactionDto> {
     const { user_id } = req;
 
-    const result = await this.transactionsService.create(
-      user_id,
-      {
-        amount: rechargeCreditDto.recharge_amount,
-      }
-    );
+    const result = await this.transactionsService.create(user_id, {
+      amount: rechargeCreditDto.recharge_amount,
+    });
 
     return TransactionDto.from(result);
+  }
+
+  @Get('/credit')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: `Returns user's balance.` })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successful recharge.',
+    type: UserDto,
+  })
+  async getBalance(@Request() req: JwtRequest): Promise<CreditDto> {
+    const { user_id } = req;
+
+    const result = await this.usersService.getCredit(user_id);
+
+    return CreditDto.from(result);
   }
 }

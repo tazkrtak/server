@@ -6,12 +6,10 @@ import { Prisma, User } from '@prisma/client';
 import { AES, SHA512 } from 'crypto-js';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { RechargeCreditDto } from './dto/recharge-credit.dto';
-import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   createSecret(): { key: string; secret: string } {
     const key = crypto.randomBytes(16).toString('hex');
@@ -66,5 +64,15 @@ export class UsersService {
         id: id,
       },
     });
+  }
+
+  async getCredit(id: string): Promise<number> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    return user.credit;
   }
 }

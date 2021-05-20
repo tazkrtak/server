@@ -6,13 +6,13 @@ import { DateFilterDto } from './dto/date-filter.dto';
 
 @Injectable()
 export class TransactionsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(
     userId: string,
     transactionCreateInput: Omit<Prisma.TransactionCreateInput, 'user'>,
   ): Promise<Transaction> {
-    const [transaction, ] = await this.prisma.$transaction([
+    const [transaction] = await this.prisma.$transaction([
       this.prisma.transaction.create({
         data: {
           ...transactionCreateInput,
@@ -21,14 +21,14 @@ export class TransactionsService {
       }),
       this.prisma.user.update({
         where: {
-          id: userId
+          id: userId,
         },
         data: {
           credit: {
             increment: transactionCreateInput.amount,
-          }
-        }
-      })
+          },
+        },
+      }),
     ]);
 
     return transaction;
