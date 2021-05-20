@@ -11,10 +11,7 @@ import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly transactionsService: TransactionsService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   createSecret(): { key: string; secret: string } {
     const key = crypto.randomBytes(16).toString('hex');
@@ -67,36 +64,6 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: {
         id: id,
-      },
-    });
-  }
-
-  async updateCredit(
-    rechargeCreditDto: RechargeCreditDto,
-    user_id: string,
-  ): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: user_id,
-      },
-    });
-
-    if (user == null) return null;
-
-    const newCredit = user.credit + rechargeCreditDto.recharge_amount;
-    await this.transactionsService.create(user.id, {
-      amount: rechargeCreditDto.recharge_amount,
-      created_at: new Date(Date.now()),
-      // TODO: Check ID Val
-      reference_id: '123',
-    });
-
-    return this.prisma.user.update({
-      where: {
-        national_id: user.national_id,
-      },
-      data: {
-        credit: newCredit,
       },
     });
   }

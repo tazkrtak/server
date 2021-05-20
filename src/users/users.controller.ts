@@ -30,15 +30,17 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { JwtRequest } from '../auth/interfaces/jwt-request.interface';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { RechargeCreditDto } from './dto/recharge-credit.dto';
-import { User } from '.prisma/client';
+import { TransactionsService } from 'src/transactions/transactions.service';
+import { TransactionDto } from 'src/transactions/dto/transaction.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
+    private readonly transactionsService: TransactionsService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
@@ -151,16 +153,16 @@ export class UsersController {
   async recharge(
     @Request() req: JwtRequest,
     @Body() rechargeCreditDto: RechargeCreditDto,
-  ): Promise<User> {
+  ): Promise<TransactionDto> {
     const { user_id } = req;
 
-    const result = await this.usersService.updateCredit(
-      rechargeCreditDto,
+    const result = await this.transactionsService.create(
       user_id,
+      {
+        amount: rechargeCreditDto.recharge_amount,
+      }
     );
 
-    if (result == null) throw new NotFoundException(`User doesn't exist`);
-
-    return result;
+    return TransactionDto.from(result);
   }
 }
