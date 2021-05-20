@@ -28,7 +28,7 @@ import { TransactionsSummaryDto } from './dto/transactions-summary.dto';
 @ApiTags('transactions')
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionsService) { }
+  constructor(private readonly transactionService: TransactionsService) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
