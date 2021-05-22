@@ -38,7 +38,7 @@ export class TransactionsService {
     userId: string,
     query: PaginatedQuery<DateFilterDto>,
   ): Promise<Transaction[]> {
-    const offset = (query.page - 1) * query.page_size;
+    const offset = query.page * query.page_size;
     return this.prisma.transaction.findMany({
       skip: offset,
       take: query.page_size,
