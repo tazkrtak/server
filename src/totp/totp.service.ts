@@ -3,6 +3,9 @@ import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { AES, enc } from 'crypto-js';
 import { Secret, TOTP } from 'otpauth';
+import { TransactionsService } from '../transactions/transactions.service';
+import { ExpiredTotpException } from './exceptions/expired-totp-exception';
+import { InvalidTotpException } from './exceptions/invalid-totp-exception';
 
 @Injectable()
 export class TotpService {
@@ -11,6 +14,8 @@ export class TotpService {
     digits: 6,
     period: 30,
   };
+
+  constructor(private readonly transactionsService: TransactionsService) {}
 
   generateSecret(): string {
     return new Secret({ size: 16 }).b32;
@@ -29,7 +34,7 @@ export class TotpService {
     return secretBytes.toString(enc.Utf8);
   }
 
-  validate(totp: string, user: User, key: string): boolean {
+  async validate(totp: string, user: User, key: string) {
     const secret = this.decryptSecret(key, user.secret);
     const now = Date.now();
 
@@ -41,6 +46,27 @@ export class TotpService {
       token: totp,
     });
 
-    return delta !== null;
+    if (delta === null) {
+      throw new InvalidTotpException();
+    }
+
+    // [RFC 6238]: The verifier MUST NOT accept the second attempt of the OTP
+    // after the successful validation has been issued for the first OTP,
+    // which ensures one-time only use of an OTP
+
+    const lastTransaction = await this.transactionsService.findLast(user.id, {
+      lt: 0,
+    });
+
+    const lastUsed = lastTransaction?.created_at?.valueOf();
+    const toInterval = (timestamp: number): number => {
+      return Math.floor(timestamp / 1000 / TotpService.config.period);
+    };
+
+    if (lastTransaction && toInterval(now) + delta === toInterval(lastUsed)) {
+      throw new ExpiredTotpException();
+    }
+
+    console.log('ACCEPTED');
   }
 }
