@@ -1,21 +1,17 @@
-import crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
-import { Secret } from 'otpauth';
 import { Prisma, User } from '@prisma/client';
 
-import { AES, SHA512 } from 'crypto-js';
+import { SHA512 } from 'crypto-js';
 import { LoginUserDto } from './dto/login-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { TotpService } from 'src/totp/totp.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  createSecret(): { key: string; secret: string } {
-    const key = crypto.randomBytes(16).toString('hex');
-    const secret = new Secret({ size: 16 }).b32;
-    return { key, secret };
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly totpService: TotpService,
+  ) {}
 
   async authenticate(loginUserDto: LoginUserDto) {
     const user = await this.prisma.user.findFirst({
@@ -33,7 +29,7 @@ export class UsersService {
   }
 
   refreshSecret(id: string, key: string, secret: string): Promise<User> {
-    const encryptedSecret = AES.encrypt(secret, key).toString();
+    const encryptedSecret = this.totpService.encryptSecret(key, secret);
 
     return this.prisma.user.update({
       where: {
@@ -46,14 +42,17 @@ export class UsersService {
   }
 
   create(userCreateInput: Prisma.UserCreateInput, key: string): Promise<User> {
-    const encryptedSecret = AES.encrypt(userCreateInput.secret, key).toString();
     const hashedPassword = SHA512(userCreateInput.password).toString();
+    const encryptedSecret = this.totpService.encryptSecret(
+      key,
+      userCreateInput.secret,
+    );
 
     return this.prisma.user.create({
       data: {
         ...userCreateInput,
-        secret: encryptedSecret,
         password: hashedPassword,
+        secret: encryptedSecret,
       },
     });
   }

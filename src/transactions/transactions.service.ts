@@ -34,6 +34,22 @@ export class TransactionsService {
     return transaction;
   }
 
+  findLast(
+    userId: string,
+    amountFilter: Prisma.FloatFilter,
+  ): Promise<Transaction> {
+    return this.prisma.transaction.findFirst({
+      take: 1,
+      where: {
+        user_id: userId,
+        amount: amountFilter,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
   findAll(
     userId: string,
     query: PaginatedQuery<DateFilterDto>,

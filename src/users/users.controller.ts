@@ -30,9 +30,10 @@ import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { JwtRequest } from '../auth/interfaces/jwt-request.interface';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { RechargeCreditDto } from './dto/recharge-credit.dto';
-import { TransactionsService } from 'src/transactions/transactions.service';
-import { TransactionDto } from 'src/transactions/dto/transaction.dto';
+import { TransactionsService } from '../transactions/transactions.service';
+import { TransactionDto } from '../transactions/dto/transaction.dto';
 import { CreditDto } from './dto/credit.dto';
+import { TotpService } from '../totp/totp.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -40,6 +41,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly transactionsService: TransactionsService,
+    private readonly totpService: TotpService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -70,7 +72,8 @@ export class UsersController {
     description: 'Validation Failed',
   })
   async register(@Body() registerUserDto: RegisterUserDto): Promise<UserDto> {
-    const { key, secret } = this.usersService.createSecret();
+    const key = this.totpService.generateKey();
+    const secret = this.totpService.generateSecret();
 
     try {
       const user = await this.usersService.create(
@@ -125,7 +128,8 @@ export class UsersController {
       throw new UnauthorizedException(`Incorrect National Id or Password`);
     }
 
-    const { key, secret } = this.usersService.createSecret();
+    const key = this.totpService.generateKey();
+    const secret = this.totpService.generateSecret();
     const user = await this.usersService.refreshSecret(
       loginUserDto.national_id,
       key,
