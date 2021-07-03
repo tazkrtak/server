@@ -74,6 +74,6 @@ export class TransactionsController {
       gt: 0,
     });
 
-    return TransactionsSummaryDto.from(-spent, recharged);
+    return TransactionsSummaryDto.from(-spent, +recharged);
   }
 }
